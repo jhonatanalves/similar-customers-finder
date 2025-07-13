@@ -7,10 +7,10 @@ import plotly.express as px
 
 st.set_page_config(layout="wide", page_title="Clientes Similares")
 
-st.title("🔍 Identificador de Clientes Similares ao top K")
-st.markdown("Visualize os clientes regulares com maior similaridade com os clientes ativos com base em **faturamento** e **frequência de uso da plataforma**.")
+st.title("🔍 Identificador de Clientes Similares a um Conjunro de Clientes-alvo")
+st.markdown("Visualize os clientes regulares com maior similaridade com os clientes-alvo com base em **faturamento** e **frequência de uso da plataforma**.")
 
-# Upload do CSV
+# CSV upload
 uploaded_file = st.file_uploader("📁 Envie um arquivo CSV com os dados dos clientes", type=["csv"])
 
 if uploaded_file:
@@ -20,19 +20,19 @@ if uploaded_file:
     if not required_cols.issubset(df.columns):
         st.error(f"O arquivo precisa conter as colunas: {', '.join(required_cols)}")
     else:
-        # Separar clientes ativos e regulares
-        active_df = df[df['type'] == 'active'].copy()
+        # Separate target and regular customers
+        target_df = df[df['type'] == 'target'].copy()
         regular_df = df[df['type'] == 'regular'].copy()
 
-        if active_df.empty or regular_df.empty:
-            st.warning("É necessário ter pelo menos um cliente ativo e um regular no arquivo.")
+        if target_df.empty or regular_df.empty:
+            st.warning("É necessário ter pelo menos um cliente-alvo e um regular no arquivo.")
         else:
             st.sidebar.header("🔧 Configurações")
 
-            # Escolha de k
+            # Choose k
             k = st.sidebar.slider("Número de clientes mais similares (k)", min_value=1, max_value=min(20, len(regular_df)), value=5)
 
-            # Escolha da métrica
+            # Select distance metric
             distance_metric = st.sidebar.selectbox("📐 Métrica de distância", ["euclidiana", "manhattan", "minkowski"])
 
             if distance_metric == "euclidiana":
@@ -45,29 +45,29 @@ if uploaded_file:
                 metric = "minkowski"
                 p = st.sidebar.slider("Valor de p (Minkowski)", min_value=1, max_value=5, value=3)
 
-            # Normalização dos dados
+            # Normalize the data
             scaler = StandardScaler()
             all_features = pd.concat([
-                active_df[['revenue', 'frequency']],
+                target_df[['revenue', 'frequency']],
                 regular_df[['revenue', 'frequency']]
             ])
             scaled = scaler.fit_transform(all_features)
 
-            active_scaled = scaled[:len(active_df)]
-            regular_scaled = scaled[len(active_df):]
+            target_scaled = scaled[:len(target_df)]
+            regular_scaled = scaled[len(target_df):]
 
-            # Treinar KNN não supervisionado
-            knn = NearestNeighbors(n_neighbors=len(active_df), metric=metric, p=p)
-            knn.fit(active_scaled)
+            # Adjust model to target customers
+            knn = NearestNeighbors(n_neighbors=len(target_df), metric=metric, p=p)
+            knn.fit(target_scaled)
 
-            # Calcular distâncias para cada cliente regular em relação aos ativos
+            # Calculate distances from each regular customer to the target customers
             distances, _ = knn.kneighbors(regular_scaled)
             mean_distances = distances.mean(axis=1)
 
             regular_df["mean_distance"] = mean_distances
             top_k_similars = regular_df.nsmallest(k, "mean_distance")
 
-            # Visualização com Plotly
+            # Visualization with Plotly
             st.subheader("📈 Visualização 2D (Faturamento x Frequência)")
             fig = px.scatter(
                 df,
@@ -75,12 +75,12 @@ if uploaded_file:
                 y="revenue",
                 color="type",
                 text="name",
-                color_discrete_map={"active": "blue", "regular": "gray"},
+                color_discrete_map={"target": "blue", "regular": "gray"},
                 labels={"frequency": "Frequência", "revenue": "Faturamento"},
                 title="Distribuição dos Clientes"
             )
 
-            # Destacar os clientes similares
+            # Highlight similar customers
             fig.add_scatter(
                 x=top_k_similars["frequency"],
                 y=top_k_similars["revenue"],
@@ -93,9 +93,9 @@ if uploaded_file:
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # Resultados detalhados
+            # Detail results
             st.subheader("📋 Top k Clientes Mais Similares")
             st.dataframe(top_k_similars[["name", "revenue", "frequency", "mean_distance"]].reset_index(drop=True))
             
 else:
-    st.info("Envie um arquivo CSV com colunas: `name`, `revenue`, `frequency`, `type` (`active` ou `regular`).")
+    st.info("Envie um arquivo CSV com colunas: `name`, `revenue`, `frequency`, `type` (`target` ou `regular`).")
