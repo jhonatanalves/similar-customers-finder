@@ -102,7 +102,14 @@ if uploaded_file:
 
             # Detail results
             st.subheader(f"📋 Top {k} Clientes Mais Similares")
-            st.dataframe(top_k_similars[["nome", "faturamento", "frequencia", "distância média"]].reset_index(drop=True))
-            
+
+            results_df = top_k_similars[["name", "revenue", "frequency", "mean_distance"]]
+            results_df = results_df.rename(columns={
+                "name": "Nome",
+                "revenue": "Faturamento",
+                "frequency": "Frequência",
+                "mean_distance": "Distância Média"
+            })
+            st.dataframe(results_df.reset_index(drop=True))            
 else:
     st.info("Envie um arquivo CSV com colunas: `name`, `revenue`, `frequency`, `type` (`target` ou `regular`).")
