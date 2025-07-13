@@ -8,7 +8,7 @@ import plotly.express as px
 st.set_page_config(layout="wide", page_title="Clientes Similares")
 
 st.title("🔍 Identificador de Clientes Similares")
-st.markdown("Visualize os clientes regulares com maior similaridade com clientes-alvo com base em **faturamento** e **frequência de uso da plataforma**.")
+st.markdown("Visualize os clientes regulares com maior similaridade com clientes-alvo com base em **faturamento** e **frequência de uso da plataforma de transporte**.")
 
 # CSV upload
 uploaded_file = st.file_uploader("📁 Envie um arquivo CSV com os dados dos clientes", type=["csv"])
@@ -78,9 +78,10 @@ if uploaded_file:
                 y="revenue",
                 color="type",
                 text="name",
-                color_discrete_map={"target": "blue", "regular": "gray"},
+                color_discrete_map={"alvo": "blue", "regular": "gray"},
                 labels={"frequency": "Frequência", "revenue": "Faturamento"},
-                title="Distribuição dos Clientes"
+                title="Distribuição dos Clientes",
+                marker=dict(size=12)
             )
 
             # Highlight similar customers
@@ -97,8 +98,8 @@ if uploaded_file:
             st.plotly_chart(fig, use_container_width=True)
 
             # Detail results
-            st.subheader("📋 Top k Clientes Mais Similares")
-            st.dataframe(top_k_similars[["name", "revenue", "frequency", "mean_distance"]].reset_index(drop=True))
+            st.subheader(f"📋 Top {k} Clientes Mais Similares")
+            st.dataframe(top_k_similars[["nome", "faturamento", "frequencia", "distância média"]].reset_index(drop=True))
             
 else:
     st.info("Envie um arquivo CSV com colunas: `name`, `revenue`, `frequency`, `type` (`target` ou `regular`).")
