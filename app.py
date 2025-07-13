@@ -16,13 +16,15 @@ uploaded_file = st.file_uploader("📁 Envie um arquivo CSV com os dados dos cli
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
 
+    df['type'] = df['type'].replace({'target': 'Alvo', 'regular': 'Regular'})
+
     required_cols = {"name", "revenue", "frequency", "type"}
     if not required_cols.issubset(df.columns):
         st.error(f"O arquivo precisa conter as colunas: {', '.join(required_cols)}")
     else:
         # Separate target and regular customers
-        target_df = df[df['type'] == 'target'].copy()
-        regular_df = df[df['type'] == 'regular'].copy()
+        target_df = df[df['type'] == 'Alvo'].copy()
+        regular_df = df[df['type'] == 'Regular'].copy()
 
         if target_df.empty or regular_df.empty:
             st.warning("É necessário ter pelo menos um cliente-alvo e um regular no arquivo.")
@@ -78,11 +80,12 @@ if uploaded_file:
                 y="revenue",
                 color="type",
                 text="name",
-                color_discrete_map={"alvo": "blue", "regular": "gray"},
-                labels={"frequency": "Frequência", "revenue": "Faturamento"},
-                title="Distribuição dos Clientes",
-                marker=dict(size=12)
+                color_discrete_map={"Alvo": "blue", "Regular": "gray"},
+                labels={"frequency": "Frequência", "revenue": "Faturamento", "type": "Tipo de Cliente"},
+                title="Distribuição dos Clientes"
             )
+           
+            fig.update_traces(marker_size=12) 
 
             # Highlight similar customers
             fig.add_scatter(
