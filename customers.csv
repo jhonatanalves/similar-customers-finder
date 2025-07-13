@@ -1,0 +1,21 @@
+name,revenue,frequency,type
+Cliente A,50000,48,target
+Cliente B,47000,45,target
+Cliente C,52000,47,target
+Cliente D,22000,22,regular
+Cliente E,19000,19,regular
+Cliente F,25000,25,regular
+Cliente G,18000,18,regular
+Cliente H,23000,24,regular
+Cliente I,27000,26,regular
+Cliente J,20000,20,regular
+Cliente K,16000,15,regular
+Cliente L,30000,28,regular
+Cliente M,26000,27,regular
+Cliente N,17000,17,regular
+Cliente O,29000,29,regular
+Cliente P,21000,21,regular
+Cliente Q,31000,30,regular
+Cliente R,24000,23,regular
+Cliente S,28000,26,regular
+Cliente T,19500,18,regular

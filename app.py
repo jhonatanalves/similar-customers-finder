@@ -7,8 +7,8 @@ import plotly.express as px
 
 st.set_page_config(layout="wide", page_title="Clientes Similares")
 
-st.title("🔍 Identificador de Clientes Similares a um Conjunro de Clientes-alvo")
-st.markdown("Visualize os clientes regulares com maior similaridade com os clientes-alvo com base em **faturamento** e **frequência de uso da plataforma**.")
+st.title("🔍 Identificador de Clientes Similares")
+st.markdown("Visualize os clientes regulares com maior similaridade com clientes-alvo com base em **faturamento** e **frequência de uso da plataforma**.")
 
 # CSV upload
 uploaded_file = st.file_uploader("📁 Envie um arquivo CSV com os dados dos clientes", type=["csv"])
@@ -68,9 +68,12 @@ if uploaded_file:
             top_k_similars = regular_df.nsmallest(k, "mean_distance")
 
             # Visualization with Plotly
-            st.subheader("📈 Visualização 2D (Faturamento x Frequência)")
+            st.subheader("📈 Visualização - Faturamento x Frequência")
+            non_similar_df = regular_df.drop(top_k_similars.index)
+            plot_df = pd.concat([target_df, non_similar_df])
+
             fig = px.scatter(
-                df,
+                plot_df, # Usa o novo dataframe filtrado
                 x="frequency",
                 y="revenue",
                 color="type",
@@ -85,7 +88,7 @@ if uploaded_file:
                 x=top_k_similars["frequency"],
                 y=top_k_similars["revenue"],
                 mode="markers+text",
-                name="Similares",
+                name="Similares", # Legenda para os pontos verdes
                 text=top_k_similars["name"],
                 textposition="top center",
                 marker=dict(color="green", size=12, line=dict(width=2, color='darkgreen'))
